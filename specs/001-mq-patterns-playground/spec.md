@@ -127,7 +127,8 @@ section with matching correlation ID displayed.
 **Core Platform**
 
 - **FR-001**: System MUST provide a single-page web interface with three distinct visual
-  panels, one for each messaging pattern (Point-to-Point, Pub/Sub, Request/Reply).
+  panels arranged in a side-by-side 3-column layout, one column per messaging pattern
+  (Point-to-Point, Pub/Sub, Request/Reply), all visible simultaneously.
 
 - **FR-002**: System MUST display real-time message flow animations showing messages
   moving between producer and consumer components.
@@ -152,8 +153,11 @@ section with matching correlation ID displayed.
 
 - **FR-008**: Users MUST be able to publish a message to a topic.
 
-- **FR-009**: System MUST display at least 2 subscriber sections that each receive
-  published messages independently.
+- **FR-009**: System MUST display 2 subscriber sections by default, with the ability
+  for users to dynamically add or remove subscribers (range: 2-4 subscribers).
+
+- **FR-009a**: System MUST provide "Add Subscriber" and "Remove Subscriber" controls
+  in the Pub/Sub panel to manage dynamic subscriber count.
 
 - **FR-010**: System MUST visually indicate when a subscriber is actively subscribed
   vs. disconnected.
@@ -239,3 +243,10 @@ The following reasonable defaults have been assumed:
 
 6. **Responder Logic**: For Request/Reply demo, a simple echo or arithmetic responder
    is sufficient rather than complex business logic.
+
+## Clarifications
+
+### Session 2025-12-26
+
+- Q: Should the number of Pub/Sub subscribers be fixed or dynamic? → A: Dynamic subscribers - users can add/remove subscribers (2-4 range)
+- Q: How should the three pattern panels be arranged on the page? → A: Side-by-side 3-column layout, all panels visible simultaneously
