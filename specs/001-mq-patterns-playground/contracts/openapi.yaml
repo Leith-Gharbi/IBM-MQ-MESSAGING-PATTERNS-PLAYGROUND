@@ -1,0 +1,327 @@
+openapi: 3.0.3
+info:
+  title: MQ Patterns Playground API
+  description: REST API for the MQ Patterns Playground demonstration application
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:5000/api
+    description: Local development server
+
+paths:
+  /status:
+    get:
+      summary: Get MQ connection status
+      operationId: getConnectionStatus
+      tags:
+        - Status
+      responses:
+        '200':
+          description: Current connection status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionStatus'
+
+  /point-to-point/send:
+    post:
+      summary: Send a message to the Point-to-Point queue
+      operationId: sendPointToPointMessage
+      tags:
+        - Point-to-Point
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          description: Invalid message content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: MQ service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /point-to-point/clear:
+    post:
+      summary: Clear Point-to-Point message history
+      operationId: clearPointToPointMessages
+      tags:
+        - Point-to-Point
+      responses:
+        '204':
+          description: Messages cleared
+
+  /pubsub/publish:
+    post:
+      summary: Publish a message to the Pub/Sub topic
+      operationId: publishMessage
+      tags:
+        - Publish/Subscribe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '200':
+          description: Message published successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          description: Invalid message content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: MQ service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /pubsub/subscribers:
+    get:
+      summary: Get list of current subscribers
+      operationId: getSubscribers
+      tags:
+        - Publish/Subscribe
+      responses:
+        '200':
+          description: List of subscribers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Subscriber'
+
+    post:
+      summary: Add a new subscriber
+      operationId: addSubscriber
+      tags:
+        - Publish/Subscribe
+      responses:
+        '201':
+          description: Subscriber added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscriber'
+        '400':
+          description: Maximum subscribers reached (4)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /pubsub/subscribers/{subscriberId}:
+    delete:
+      summary: Remove a subscriber
+      operationId: removeSubscriber
+      tags:
+        - Publish/Subscribe
+      parameters:
+        - name: subscriberId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Subscriber removed
+        '400':
+          description: Minimum subscribers required (2)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subscriber not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /pubsub/clear:
+    post:
+      summary: Clear Pub/Sub message history
+      operationId: clearPubSubMessages
+      tags:
+        - Publish/Subscribe
+      responses:
+        '204':
+          description: Messages cleared
+
+  /request-reply/send:
+    post:
+      summary: Send a request and wait for reply
+      operationId: sendRequest
+      tags:
+        - Request/Reply
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendRequestMessage'
+      responses:
+        '200':
+          description: Request sent, reply pending
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Request'
+        '400':
+          description: Invalid request content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: MQ service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /request-reply/clear:
+    post:
+      summary: Clear Request/Reply message history
+      operationId: clearRequestReplyMessages
+      tags:
+        - Request/Reply
+      responses:
+        '204':
+          description: Messages cleared
+
+components:
+  schemas:
+    SendMessageRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 10000
+          description: Message text content
+
+    SendRequestMessage:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 10000
+          description: Request message content
+        timeoutSeconds:
+          type: integer
+          minimum: 1
+          maximum: 120
+          default: 30
+          description: Timeout in seconds for reply
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        content:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        direction:
+          type: string
+          enum: [Sent, Received]
+        correlationId:
+          type: string
+          nullable: true
+        pattern:
+          type: string
+          enum: [PointToPoint, PublishSubscribe, RequestReply]
+
+    ConnectionStatus:
+      type: object
+      properties:
+        isConnected:
+          type: boolean
+        queueManagerName:
+          type: string
+          nullable: true
+        lastChecked:
+          type: string
+          format: date-time
+        errorMessage:
+          type: string
+          nullable: true
+
+    Subscriber:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        isActive:
+          type: boolean
+        messageCount:
+          type: integer
+          description: Number of messages received
+
+    Request:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        correlationId:
+          type: string
+        content:
+          type: string
+        sentAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [Pending, Completed, TimedOut]
+        response:
+          $ref: '#/components/schemas/Message'
+          nullable: true
+        timeoutSeconds:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
