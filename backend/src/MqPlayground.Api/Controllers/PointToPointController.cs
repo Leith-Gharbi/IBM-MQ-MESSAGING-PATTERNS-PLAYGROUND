@@ -31,7 +31,7 @@ public class PointToPointController : ControllerBase
     [ProducesResponseType(typeof(Message), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public ActionResult<Message> SendMessage([FromBody] SendMessageRequest request)
+    public async Task<ActionResult<Message>> SendMessage([FromBody] SendMessageRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
         {
@@ -45,7 +45,7 @@ public class PointToPointController : ControllerBase
 
         try
         {
-            var message = _p2pService.SendMessage(request.Content);
+            var message = await _p2pService.SendMessageAsync(request.Content);
             return Ok(message);
         }
         catch (InvalidOperationException ex)

@@ -17,6 +17,12 @@
         />
       </div>
 
+      <!-- Topic Queue Visualization -->
+      <QueueView
+        :messages="queueMessages"
+        queue-name="playground/pubsub/"
+      />
+
       <!-- Subscriber Controls -->
       <SubscriberControl
         :subscriber-count="subscribers.length"
@@ -55,6 +61,7 @@ import PatternPanel from '../components/PatternPanel.vue';
 import MessageInput from '../components/MessageInput.vue';
 import MessageList from '../components/MessageList.vue';
 import SubscriberControl from '../components/SubscriberControl.vue';
+import QueueView from '../components/QueueView.vue';
 import signalrService from '../services/signalrService';
 
 /**
@@ -74,13 +81,15 @@ export default {
     PatternPanel,
     MessageInput,
     MessageList,
-    SubscriberControl
+    SubscriberControl,
+    QueueView
   },
 
   data() {
     return {
       subscribers: [],
       subscriberMessages: {},
+      queueMessages: [],
       isLoading: false,
       error: ''
     };
@@ -91,6 +100,9 @@ export default {
     signalrService.on('SubscriberMessageReceived', this.handleSubscriberMessageReceived);
     signalrService.on('SubscriberAdded', this.handleSubscriberAdded);
     signalrService.on('SubscriberRemoved', this.handleSubscriberRemoved);
+    // Register for queue visualization events
+    signalrService.on('QueueMessageAdded', this.handleQueueMessageAdded);
+    signalrService.on('QueueMessageRemoved', this.handleQueueMessageRemoved);
 
     // Load initial subscribers
     await this.loadSubscribers();
@@ -100,6 +112,8 @@ export default {
     signalrService.off('SubscriberMessageReceived', this.handleSubscriberMessageReceived);
     signalrService.off('SubscriberAdded', this.handleSubscriberAdded);
     signalrService.off('SubscriberRemoved', this.handleSubscriberRemoved);
+    signalrService.off('QueueMessageAdded', this.handleQueueMessageAdded);
+    signalrService.off('QueueMessageRemoved', this.handleQueueMessageRemoved);
   },
 
   methods: {
@@ -149,6 +163,23 @@ export default {
       if (index !== -1) {
         this.subscribers.splice(index, 1);
         this.$delete(this.subscriberMessages, subscriberId);
+      }
+    },
+
+    handleQueueMessageAdded(queueMessage) {
+      // Only handle PubSub topic messages
+      if (queueMessage.queueName === 'playground/pubsub/') {
+        this.queueMessages.push(queueMessage);
+      }
+    },
+
+    handleQueueMessageRemoved(data) {
+      // Remove message from queue display
+      if (data.queueName === 'playground/pubsub/') {
+        const index = this.queueMessages.findIndex(m => m.id === data.messageId);
+        if (index !== -1) {
+          this.queueMessages.splice(index, 1);
+        }
       }
     },
 
@@ -230,6 +261,7 @@ export default {
           this.subscriberMessages[id] = [];
         });
         this.subscribers.forEach(s => s.messageCount = 0);
+        this.queueMessages = [];
         this.error = '';
       } catch (err) {
         console.error('Error clearing messages:', err);

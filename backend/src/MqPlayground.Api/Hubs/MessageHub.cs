@@ -19,6 +19,8 @@ namespace MqPlayground.Api.Hubs;
 /// - ConnectionStatusChanged: When MQ connection state changes
 /// - SubscriberAdded: When a new Pub/Sub subscriber is created
 /// - SubscriberRemoved: When a Pub/Sub subscriber is deleted
+/// - QueueMessageAdded: When a message is added to a queue (for visualization)
+/// - QueueMessageRemoved: When a message is consumed from a queue
 ///
 /// Client-to-Server Methods:
 /// - JoinSession: Register for updates, receive initial state

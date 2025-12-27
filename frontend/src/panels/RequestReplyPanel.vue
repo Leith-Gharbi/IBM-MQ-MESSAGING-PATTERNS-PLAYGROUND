@@ -17,6 +17,18 @@
         />
       </div>
 
+      <!-- Queue Visualizations -->
+      <div class="queues-section">
+        <QueueView
+          :messages="requestQueueMessages"
+          queue-name="PLAYGROUND.REQUEST.QUEUE"
+        />
+        <QueueView
+          :messages="replyQueueMessages"
+          queue-name="PLAYGROUND.REPLY.QUEUE"
+        />
+      </div>
+
       <!-- Requests List -->
       <div class="section requests-list">
         <h3>Requests & Responses</h3>
@@ -74,6 +86,7 @@
 <script>
 import PatternPanel from '../components/PatternPanel.vue';
 import MessageInput from '../components/MessageInput.vue';
+import QueueView from '../components/QueueView.vue';
 import signalrService from '../services/signalrService';
 
 /**
@@ -91,12 +104,15 @@ export default {
 
   components: {
     PatternPanel,
-    MessageInput
+    MessageInput,
+    QueueView
   },
 
   data() {
     return {
       requests: [],
+      requestQueueMessages: [],
+      replyQueueMessages: [],
       isLoading: false,
       error: '',
       timeUpdateInterval: null
@@ -112,6 +128,9 @@ export default {
 
   mounted() {
     signalrService.on('RequestStatusChanged', this.handleRequestStatusChanged);
+    // Register for queue visualization events
+    signalrService.on('QueueMessageAdded', this.handleQueueMessageAdded);
+    signalrService.on('QueueMessageRemoved', this.handleQueueMessageRemoved);
 
     // Update time remaining every second
     this.timeUpdateInterval = setInterval(() => {
@@ -121,6 +140,8 @@ export default {
 
   beforeDestroy() {
     signalrService.off('RequestStatusChanged', this.handleRequestStatusChanged);
+    signalrService.off('QueueMessageAdded', this.handleQueueMessageAdded);
+    signalrService.off('QueueMessageRemoved', this.handleQueueMessageRemoved);
     if (this.timeUpdateInterval) {
       clearInterval(this.timeUpdateInterval);
     }
@@ -131,6 +152,28 @@ export default {
       const index = this.requests.findIndex(r => r.correlationId === updatedRequest.correlationId);
       if (index !== -1) {
         this.$set(this.requests, index, updatedRequest);
+      }
+    },
+
+    handleQueueMessageAdded(queueMessage) {
+      if (queueMessage.queueName === 'PLAYGROUND.REQUEST.QUEUE') {
+        this.requestQueueMessages.push(queueMessage);
+      } else if (queueMessage.queueName === 'PLAYGROUND.REPLY.QUEUE') {
+        this.replyQueueMessages.push(queueMessage);
+      }
+    },
+
+    handleQueueMessageRemoved(data) {
+      if (data.queueName === 'PLAYGROUND.REQUEST.QUEUE') {
+        const index = this.requestQueueMessages.findIndex(m => m.id === data.messageId);
+        if (index !== -1) {
+          this.requestQueueMessages.splice(index, 1);
+        }
+      } else if (data.queueName === 'PLAYGROUND.REPLY.QUEUE') {
+        const index = this.replyQueueMessages.findIndex(m => m.id === data.messageId);
+        if (index !== -1) {
+          this.replyQueueMessages.splice(index, 1);
+        }
       }
     },
 
@@ -169,6 +212,8 @@ export default {
       try {
         await fetch('/api/request-reply/clear', { method: 'POST' });
         this.requests = [];
+        this.requestQueueMessages = [];
+        this.replyQueueMessages = [];
         this.error = '';
       } catch (err) {
         console.error('Error clearing requests:', err);
@@ -213,6 +258,12 @@ export default {
 .requester {
   background-color: #e8f5e9;
   border-color: #a5d6a7;
+}
+
+.queues-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .requests-list {

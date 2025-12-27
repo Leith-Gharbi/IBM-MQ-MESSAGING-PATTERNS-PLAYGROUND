@@ -17,15 +17,18 @@ public class TopicSubscriber : BackgroundService
     private readonly ILogger<TopicSubscriber> _logger;
     private readonly IMqConnectionService _mqConnection;
     private readonly PubSubService _pubSubService;
+    private readonly IQueueBrowserService _queueBrowser;
 
     public TopicSubscriber(
         ILogger<TopicSubscriber> logger,
         IMqConnectionService mqConnection,
-        PubSubService pubSubService)
+        PubSubService pubSubService,
+        IQueueBrowserService queueBrowser)
     {
         _logger = logger;
         _mqConnection = mqConnection;
         _pubSubService = pubSubService;
+        _queueBrowser = queueBrowser;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -94,8 +97,15 @@ public class TopicSubscriber : BackgroundService
                     subscription.Get(mqMessage, getOptions);
 
                     var content = mqMessage.ReadString(mqMessage.MessageLength);
+                    var messageId = Guid.NewGuid().ToString();
 
                     _logger.LogInformation("Message received from topic: {Content}", content);
+
+                    // Wait for visualization delay before notifying consumption
+                    await Task.Delay(_queueBrowser.ConsumptionDelayMs, stoppingToken);
+
+                    // Notify queue browser that message was consumed from topic
+                    await _queueBrowser.NotifyMessageDequeued(messageId, PatternConfig.PubSubTopicString);
 
                     // Deliver message to all active subscribers
                     var subscribers = _pubSubService.GetSubscribers()

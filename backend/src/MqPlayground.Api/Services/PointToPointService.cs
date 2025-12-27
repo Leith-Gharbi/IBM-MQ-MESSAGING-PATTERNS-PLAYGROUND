@@ -15,13 +15,16 @@ public class PointToPointService
 {
     private readonly ILogger<PointToPointService> _logger;
     private readonly IMqConnectionService _mqConnection;
+    private readonly IQueueBrowserService _queueBrowser;
 
     public PointToPointService(
         ILogger<PointToPointService> logger,
-        IMqConnectionService mqConnection)
+        IMqConnectionService mqConnection,
+        IQueueBrowserService queueBrowser)
     {
         _logger = logger;
         _mqConnection = mqConnection;
+        _queueBrowser = queueBrowser;
     }
 
     /// <summary>
@@ -29,7 +32,7 @@ public class PointToPointService
     /// </summary>
     /// <param name="content">The message content to send.</param>
     /// <returns>The sent message with generated ID and timestamp.</returns>
-    public Message SendMessage(string content)
+    public async Task<Message> SendMessageAsync(string content)
     {
         var queueManager = _mqConnection.GetQueueManager() as MQQueueManager;
         if (queueManager == null || !_mqConnection.IsConnected)
@@ -66,6 +69,17 @@ public class PointToPointService
                 "Message sent to {Queue}: {MessageId}",
                 PatternConfig.P2PQueue,
                 message.Id);
+
+            // Notify queue browser for visualization
+            var queueMessage = new QueueMessage
+            {
+                Id = message.Id,
+                Content = content,
+                QueueName = PatternConfig.P2PQueue,
+                Pattern = MessagePattern.PointToPoint,
+                EnqueuedAt = message.Timestamp
+            };
+            await _queueBrowser.NotifyMessageEnqueued(queueMessage);
 
             return message;
         }

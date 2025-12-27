@@ -27,6 +27,9 @@ builder.Services.AddCors(options =>
 // Register MQ connection service as singleton (shared connection)
 builder.Services.AddSingleton<IMqConnectionService, MqConnectionService>();
 
+// Register Queue Browser service for real-time queue visualization
+builder.Services.AddSingleton<IQueueBrowserService, QueueBrowserService>();
+
 // Register Point-to-Point services
 builder.Services.AddSingleton<PointToPointService>();
 builder.Services.AddHostedService<PointToPointConsumer>();

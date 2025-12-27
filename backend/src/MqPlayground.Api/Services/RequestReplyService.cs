@@ -20,16 +20,19 @@ public class RequestReplyService
     private readonly ILogger<RequestReplyService> _logger;
     private readonly IMqConnectionService _mqConnection;
     private readonly IHubContext<MessageHub> _hubContext;
+    private readonly IQueueBrowserService _queueBrowser;
     private readonly ConcurrentDictionary<string, Request> _pendingRequests = new();
 
     public RequestReplyService(
         ILogger<RequestReplyService> logger,
         IMqConnectionService mqConnection,
-        IHubContext<MessageHub> hubContext)
+        IHubContext<MessageHub> hubContext,
+        IQueueBrowserService queueBrowser)
     {
         _logger = logger;
         _mqConnection = mqConnection;
         _hubContext = hubContext;
+        _queueBrowser = queueBrowser;
     }
 
     /// <summary>
@@ -38,7 +41,7 @@ public class RequestReplyService
     /// <param name="content">The request content.</param>
     /// <param name="timeoutSeconds">Reply timeout in seconds.</param>
     /// <returns>The pending request object.</returns>
-    public Request SendRequest(string content, int timeoutSeconds = 30)
+    public async Task<Request> SendRequestAsync(string content, int timeoutSeconds = 30)
     {
         var queueManager = _mqConnection.GetQueueManager() as MQQueueManager;
         if (queueManager == null || !_mqConnection.IsConnected)
@@ -82,6 +85,18 @@ public class RequestReplyService
             _logger.LogInformation(
                 "Request sent with correlation ID: {CorrelationId}",
                 request.CorrelationId);
+
+            // Notify queue browser for visualization (request queue)
+            var queueMessage = new QueueMessage
+            {
+                Id = request.Id,
+                Content = content,
+                QueueName = PatternConfig.RequestQueue,
+                Pattern = MessagePattern.RequestReply,
+                CorrelationId = request.CorrelationId,
+                EnqueuedAt = request.SentAt
+            };
+            await _queueBrowser.NotifyMessageEnqueued(queueMessage);
 
             // Start timeout timer
             _ = StartTimeoutTimer(request);

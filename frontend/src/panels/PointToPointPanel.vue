@@ -17,6 +17,12 @@
         />
       </div>
 
+      <!-- Queue Visualization Section -->
+      <QueueView
+        :messages="queueMessages"
+        queue-name="PLAYGROUND.P2P.QUEUE"
+      />
+
       <!-- Consumer Section -->
       <div class="section consumer">
         <h3>Consumer</h3>
@@ -34,6 +40,7 @@
 import PatternPanel from '../components/PatternPanel.vue';
 import MessageInput from '../components/MessageInput.vue';
 import MessageList from '../components/MessageList.vue';
+import QueueView from '../components/QueueView.vue';
 import signalrService from '../services/signalrService';
 
 /**
@@ -52,12 +59,14 @@ export default {
   components: {
     PatternPanel,
     MessageInput,
-    MessageList
+    MessageList,
+    QueueView
   },
 
   data() {
     return {
       messages: [],
+      queueMessages: [],
       isLoading: false,
       error: ''
     };
@@ -66,10 +75,15 @@ export default {
   mounted() {
     // Register for Point-to-Point messages
     signalrService.on('MessageReceived', this.handleMessageReceived);
+    // Register for queue visualization events
+    signalrService.on('QueueMessageAdded', this.handleQueueMessageAdded);
+    signalrService.on('QueueMessageRemoved', this.handleQueueMessageRemoved);
   },
 
   beforeDestroy() {
     signalrService.off('MessageReceived', this.handleMessageReceived);
+    signalrService.off('QueueMessageAdded', this.handleQueueMessageAdded);
+    signalrService.off('QueueMessageRemoved', this.handleQueueMessageRemoved);
   },
 
   methods: {
@@ -81,6 +95,23 @@ export default {
         // FIFO: Keep only last 50 messages
         if (this.messages.length > 50) {
           this.messages.shift();
+        }
+      }
+    },
+
+    handleQueueMessageAdded(queueMessage) {
+      // Only handle P2P queue messages
+      if (queueMessage.queueName === 'PLAYGROUND.P2P.QUEUE') {
+        this.queueMessages.push(queueMessage);
+      }
+    },
+
+    handleQueueMessageRemoved(data) {
+      // Remove message from queue display
+      if (data.queueName === 'PLAYGROUND.P2P.QUEUE') {
+        const index = this.queueMessages.findIndex(m => m.id === data.messageId);
+        if (index !== -1) {
+          this.queueMessages.splice(index, 1);
         }
       }
     },
@@ -119,6 +150,7 @@ export default {
           method: 'POST'
         });
         this.messages = [];
+        this.queueMessages = [];
         this.error = '';
       } catch (err) {
         console.error('Error clearing messages:', err);

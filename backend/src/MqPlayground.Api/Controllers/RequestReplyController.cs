@@ -29,7 +29,7 @@ public class RequestReplyController : ControllerBase
     [ProducesResponseType(typeof(Request), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public ActionResult<Request> SendRequest([FromBody] SendRequestMessage requestMessage)
+    public async Task<ActionResult<Request>> SendRequest([FromBody] SendRequestMessage requestMessage)
     {
         if (string.IsNullOrWhiteSpace(requestMessage.Content))
         {
@@ -49,7 +49,7 @@ public class RequestReplyController : ControllerBase
 
         try
         {
-            var request = _requestReplyService.SendRequest(requestMessage.Content, timeout);
+            var request = await _requestReplyService.SendRequestAsync(requestMessage.Content, timeout);
             return Ok(request);
         }
         catch (InvalidOperationException ex)

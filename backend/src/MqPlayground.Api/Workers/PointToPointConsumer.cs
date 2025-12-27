@@ -19,15 +19,18 @@ public class PointToPointConsumer : BackgroundService
     private readonly ILogger<PointToPointConsumer> _logger;
     private readonly IMqConnectionService _mqConnection;
     private readonly IHubContext<MessageHub> _hubContext;
+    private readonly IQueueBrowserService _queueBrowser;
 
     public PointToPointConsumer(
         ILogger<PointToPointConsumer> logger,
         IMqConnectionService mqConnection,
-        IHubContext<MessageHub> hubContext)
+        IHubContext<MessageHub> hubContext,
+        IQueueBrowserService queueBrowser)
     {
         _logger = logger;
         _mqConnection = mqConnection;
         _hubContext = hubContext;
+        _queueBrowser = queueBrowser;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -106,6 +109,12 @@ public class PointToPointConsumer : BackgroundService
                         "Message received from {Queue}: {MessageId}",
                         PatternConfig.P2PQueue,
                         message.Id);
+
+                    // Wait for visualization delay before notifying consumption
+                    await Task.Delay(_queueBrowser.ConsumptionDelayMs, stoppingToken);
+
+                    // Notify queue browser that message was consumed
+                    await _queueBrowser.NotifyMessageDequeued(message.Id, PatternConfig.P2PQueue);
 
                     // Broadcast to all connected clients via SignalR
                     await _hubContext.Clients.Group("Playground")

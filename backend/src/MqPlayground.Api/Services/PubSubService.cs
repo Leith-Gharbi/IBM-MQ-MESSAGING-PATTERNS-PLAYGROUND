@@ -19,17 +19,20 @@ public class PubSubService
     private readonly ILogger<PubSubService> _logger;
     private readonly IMqConnectionService _mqConnection;
     private readonly IHubContext<MessageHub> _hubContext;
+    private readonly IQueueBrowserService _queueBrowser;
     private readonly ConcurrentDictionary<string, Subscriber> _subscribers = new();
     private int _subscriberCounter;
 
     public PubSubService(
         ILogger<PubSubService> logger,
         IMqConnectionService mqConnection,
-        IHubContext<MessageHub> hubContext)
+        IHubContext<MessageHub> hubContext,
+        IQueueBrowserService queueBrowser)
     {
         _logger = logger;
         _mqConnection = mqConnection;
         _hubContext = hubContext;
+        _queueBrowser = queueBrowser;
 
         // Initialize with minimum 2 subscribers
         AddSubscriber();
@@ -106,7 +109,7 @@ public class PubSubService
     /// </summary>
     /// <param name="content">The message content to publish.</param>
     /// <returns>The published message.</returns>
-    public Message PublishMessage(string content)
+    public async Task<Message> PublishMessageAsync(string content)
     {
         var queueManager = _mqConnection.GetQueueManager() as MQQueueManager;
         if (queueManager == null || !_mqConnection.IsConnected)
@@ -144,6 +147,17 @@ public class PubSubService
                 "Message published to topic {Topic}: {MessageId}",
                 PatternConfig.PubSubTopicString,
                 message.Id);
+
+            // Notify queue browser for visualization (shared topic queue)
+            var queueMessage = new QueueMessage
+            {
+                Id = message.Id,
+                Content = content,
+                QueueName = PatternConfig.PubSubTopicString,
+                Pattern = MessagePattern.PublishSubscribe,
+                EnqueuedAt = message.Timestamp
+            };
+            await _queueBrowser.NotifyMessageEnqueued(queueMessage);
 
             return message;
         }

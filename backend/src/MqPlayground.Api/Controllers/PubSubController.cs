@@ -29,7 +29,7 @@ public class PubSubController : ControllerBase
     [ProducesResponseType(typeof(Message), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public ActionResult<Message> PublishMessage([FromBody] SendMessageRequest request)
+    public async Task<ActionResult<Message>> PublishMessage([FromBody] SendMessageRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
         {
@@ -43,7 +43,7 @@ public class PubSubController : ControllerBase
 
         try
         {
-            var message = _pubSubService.PublishMessage(request.Content);
+            var message = await _pubSubService.PublishMessageAsync(request.Content);
             return Ok(message);
         }
         catch (InvalidOperationException ex)

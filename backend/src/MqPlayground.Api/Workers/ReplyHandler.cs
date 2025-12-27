@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using IBM.WMQ;
 using MqPlayground.Api.Models;
 using MqPlayground.Api.Services;
+using MessagePattern = MqPlayground.Api.Models.MessagePattern;
 
 namespace MqPlayground.Api.Workers;
 
@@ -18,15 +19,18 @@ public class ReplyHandler : BackgroundService
     private readonly ILogger<ReplyHandler> _logger;
     private readonly IMqConnectionService _mqConnection;
     private readonly RequestReplyService _requestReplyService;
+    private readonly IQueueBrowserService _queueBrowser;
 
     public ReplyHandler(
         ILogger<ReplyHandler> logger,
         IMqConnectionService mqConnection,
-        RequestReplyService requestReplyService)
+        RequestReplyService requestReplyService,
+        IQueueBrowserService queueBrowser)
     {
         _logger = logger;
         _mqConnection = mqConnection;
         _requestReplyService = requestReplyService;
+        _queueBrowser = queueBrowser;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -101,8 +105,15 @@ public class ReplyHandler : BackgroundService
                     var content = mqMessage.ReadString(mqMessage.MessageLength);
                     var replyToQueue = mqMessage.ReplyToQueueName;
                     var correlationId = mqMessage.MessageId;
+                    var requestMessageId = Guid.NewGuid().ToString();
 
                     _logger.LogInformation("Request received: {Content}", content);
+
+                    // Wait for visualization delay before processing
+                    await Task.Delay(_queueBrowser.ConsumptionDelayMs, stoppingToken);
+
+                    // Notify queue browser that request was consumed
+                    await _queueBrowser.NotifyMessageDequeued(requestMessageId, PatternConfig.RequestQueue);
 
                     // Process the request (simple responder logic)
                     var responseContent = ProcessRequest(content);
@@ -121,6 +132,19 @@ public class ReplyHandler : BackgroundService
                         replyMessage.MessageType = MQC.MQMT_REPLY;
 
                         replyQueue.Put(replyMessage, new MQPutMessageOptions());
+
+                        // Notify queue browser that reply was added to queue
+                        var replyQueueMessage = new QueueMessage
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            Content = responseContent,
+                            QueueName = PatternConfig.ReplyQueue,
+                            Pattern = MessagePattern.RequestReply,
+                            CorrelationId = Convert.ToBase64String(correlationId),
+                            EnqueuedAt = DateTime.UtcNow
+                        };
+                        await _queueBrowser.NotifyMessageEnqueued(replyQueueMessage);
+
                         replyQueue.Close();
                         replyQueue = null;
 
@@ -193,6 +217,13 @@ public class ReplyHandler : BackgroundService
 
                     var content = mqMessage.ReadString(mqMessage.MessageLength);
                     var correlationId = mqMessage.CorrelationId;
+                    var replyMessageId = Guid.NewGuid().ToString();
+
+                    // Wait for visualization delay before processing reply
+                    await Task.Delay(_queueBrowser.ConsumptionDelayMs, stoppingToken);
+
+                    // Notify queue browser that reply was consumed
+                    await _queueBrowser.NotifyMessageDequeued(replyMessageId, PatternConfig.ReplyQueue);
 
                     await _requestReplyService.HandleReplyReceived(correlationId, content);
                 }
