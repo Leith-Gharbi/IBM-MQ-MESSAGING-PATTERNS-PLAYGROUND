@@ -24,14 +24,16 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create backend project structure with `dotnet new webapi` in backend/src/MqPlayground.Api/
-- [ ] T002 [P] Add NuGet packages (IBMMQDotnetClient, Microsoft.AspNetCore.SignalR) to backend/src/MqPlayground.Api/MqPlayground.Api.csproj
-- [ ] T003 [P] Create frontend project with Vue CLI in frontend/ using Vue 2 template
-- [ ] T004 [P] Add npm packages (@microsoft/signalr) to frontend/package.json
-- [ ] T005 [P] Create docker-compose.yml in docker/ with IBM MQ service configuration
-- [ ] T006 [P] Create MQ MQSC config file in docker/mq/config/20-playground.mqsc with queue/topic definitions
-- [ ] T007 [P] Create .env.example in docker/ with environment variable template
-- [ ] T008 [P] Create secrets/app_password.txt placeholder in docker/secrets/
+- [x] T001 Create backend project structure with `dotnet new webapi` in backend/src/MqPlayground.Api/
+- [x] T002 [P] Add NuGet packages (IBMMQDotnetClient 9.4.4, Microsoft.AspNetCore.SignalR) to backend/src/MqPlayground.Api/MqPlayground.Api.csproj
+- [x] T003 [P] Create frontend project with Vue CLI in frontend/ using Vue 2 template
+- [x] T004 [P] Add npm packages (@microsoft/signalr) to frontend/package.json
+- [x] T005 [P] Create docker-compose.yml in docker/ with IBM MQ service configuration
+- [x] T006 [P] Create MQ MQSC config file in docker/mq/config/20-playground.mqsc with queue/topic definitions
+- [x] T007 [P] Create .env.example in docker/ with environment variable template
+- [x] T008 [P] Create secrets/app_password.txt placeholder in docker/secrets/
+- [x] T009 [P] Create multi-stage Dockerfile for backend in backend/Dockerfile with .NET 8 SDK build and runtime stages
+- [x] T010 [P] Create multi-stage Dockerfile for frontend in frontend/Dockerfile with Node build stage and nginx runtime
 
 **Checkpoint**: Project scaffolding complete, ready for foundational components
 
@@ -45,38 +47,38 @@
 
 ### Backend Models (shared across all stories)
 
-- [ ] T009 [P] Create Message.cs model in backend/src/MqPlayground.Api/Models/Message.cs with Id, Content, Timestamp, Direction, CorrelationId, Pattern properties
-- [ ] T010 [P] Create ConnectionStatus.cs model in backend/src/MqPlayground.Api/Models/ConnectionStatus.cs with IsConnected, QueueManagerName, LastChecked, ErrorMessage properties
-- [ ] T011 [P] Create PatternConfig.cs model in backend/src/MqPlayground.Api/Models/PatternConfig.cs with queue/topic name constants
-- [ ] T012 [P] Create ErrorResponse.cs model in backend/src/MqPlayground.Api/Models/ErrorResponse.cs
+- [x] T011 [P] Create Message.cs model in backend/src/MqPlayground.Api/Models/Message.cs with Id, Content, Timestamp, Direction, CorrelationId, Pattern properties
+- [x] T012 [P] Create ConnectionStatus.cs model in backend/src/MqPlayground.Api/Models/ConnectionStatus.cs with IsConnected, QueueManagerName, LastChecked, ErrorMessage properties
+- [x] T013 [P] Create PatternConfig.cs model in backend/src/MqPlayground.Api/Models/PatternConfig.cs with queue/topic name constants
+- [x] T014 [P] Create ErrorResponse.cs model in backend/src/MqPlayground.Api/Models/ErrorResponse.cs
 
 ### Backend Core Services
 
-- [ ] T013 Create IMqConnectionService.cs interface in backend/src/MqPlayground.Api/Services/IMqConnectionService.cs defining Connect, Disconnect, GetStatus, IsConnected methods
-- [ ] T014 Create MqConnectionService.cs in backend/src/MqPlayground.Api/Services/MqConnectionService.cs implementing IBM MQ connection management with retry logic
-- [ ] T015 Create MessageHub.cs SignalR hub in backend/src/MqPlayground.Api/Hubs/MessageHub.cs with JoinSession, LeaveSession methods and connection state tracking
+- [x] T015 Create IMqConnectionService.cs interface in backend/src/MqPlayground.Api/Services/IMqConnectionService.cs defining Connect, Disconnect, GetStatus, IsConnected methods
+- [x] T016 Create MqConnectionService.cs in backend/src/MqPlayground.Api/Services/MqConnectionService.cs implementing IBM MQ connection management with retry logic
+- [x] T017 Create MessageHub.cs SignalR hub in backend/src/MqPlayground.Api/Hubs/MessageHub.cs with JoinSession, LeaveSession methods and connection state tracking
 
 ### Backend Configuration
 
-- [ ] T016 Configure Program.cs in backend/src/MqPlayground.Api/Program.cs with SignalR, CORS, MQ service registration, and API controllers
-- [ ] T017 [P] Create appsettings.json in backend/src/MqPlayground.Api/appsettings.json with MQ connection settings (host, port, channel, queue manager)
-- [ ] T018 [P] Create appsettings.Development.json in backend/src/MqPlayground.Api/appsettings.Development.json with local Docker MQ settings
+- [x] T018 Configure Program.cs in backend/src/MqPlayground.Api/Program.cs with SignalR, CORS, MQ service registration, and API controllers
+- [x] T019 [P] Create appsettings.json in backend/src/MqPlayground.Api/appsettings.json with MQ connection settings (host, port, channel, queue manager)
+- [x] T020 [P] Create appsettings.Development.json in backend/src/MqPlayground.Api/appsettings.Development.json with local Docker MQ settings
 
 ### Frontend Core Components
 
-- [ ] T019 Create signalrService.js in frontend/src/services/signalrService.js with connection management, auto-reconnect, event handlers
-- [ ] T020 [P] Create ConnectionStatus.vue in frontend/src/components/ConnectionStatus.vue showing MQ connection state indicator
-- [ ] T021 [P] Create MessageInput.vue in frontend/src/components/MessageInput.vue with text input and send button
-- [ ] T022 [P] Create MessageList.vue in frontend/src/components/MessageList.vue displaying messages with content, timestamp, direction
-- [ ] T023 [P] Create PatternPanel.vue in frontend/src/components/PatternPanel.vue as reusable wrapper with title, clear button, loading state
+- [x] T021 Create signalrService.js in frontend/src/services/signalrService.js with connection management, auto-reconnect, event handlers
+- [x] T022 [P] Create ConnectionStatus.vue in frontend/src/components/ConnectionStatus.vue showing MQ connection state indicator
+- [x] T023 [P] Create MessageInput.vue in frontend/src/components/MessageInput.vue with text input and send button
+- [x] T024 [P] Create MessageList.vue in frontend/src/components/MessageList.vue displaying messages with content, timestamp, direction, and CSS fade-in animation for new messages (FR-002)
+- [x] T025 [P] Create PatternPanel.vue in frontend/src/components/PatternPanel.vue as reusable wrapper with title, clear button, loading state
 
 ### Backend Status Endpoint
 
-- [ ] T024 Create StatusController.cs in backend/src/MqPlayground.Api/Controllers/StatusController.cs with GET /api/status endpoint returning ConnectionStatus
+- [x] T026 Create StatusController.cs in backend/src/MqPlayground.Api/Controllers/StatusController.cs with GET /api/status endpoint returning ConnectionStatus
 
 ### Frontend App Shell
 
-- [ ] T025 Update App.vue in frontend/src/App.vue with 3-column layout grid, SignalR connection initialization, connection status display
+- [x] T027 Update App.vue in frontend/src/App.vue with 3-column layout grid, SignalR connection initialization, connection status display
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -90,19 +92,19 @@
 
 ### Backend Implementation for US1
 
-- [ ] T026 [US1] Create PointToPointService.cs in backend/src/MqPlayground.Api/Services/PointToPointService.cs with SendMessage method that puts message to PLAYGROUND.P2P.QUEUE
-- [ ] T027 [US1] Create PointToPointConsumer.cs background worker in backend/src/MqPlayground.Api/Workers/PointToPointConsumer.cs that listens on queue and pushes to SignalR hub
-- [ ] T028 [US1] Create PointToPointController.cs in backend/src/MqPlayground.Api/Controllers/PointToPointController.cs with POST /api/point-to-point/send and POST /api/point-to-point/clear endpoints
-- [ ] T029 [US1] Register PointToPointConsumer as hosted service in Program.cs
-- [ ] T030 [US1] Add MessageReceived SignalR broadcast in PointToPointConsumer when message received from queue
+- [x] T028 [US1] Create PointToPointService.cs in backend/src/MqPlayground.Api/Services/PointToPointService.cs with SendMessage method that puts message to PLAYGROUND.P2P.QUEUE
+- [x] T029 [US1] Create PointToPointConsumer.cs background worker in backend/src/MqPlayground.Api/Workers/PointToPointConsumer.cs that listens on queue and pushes to SignalR hub
+- [x] T030 [US1] Create PointToPointController.cs in backend/src/MqPlayground.Api/Controllers/PointToPointController.cs with POST /api/point-to-point/send and POST /api/point-to-point/clear endpoints
+- [x] T031 [US1] Register PointToPointConsumer as hosted service in Program.cs
+- [x] T032 [US1] Add MessageReceived SignalR broadcast in PointToPointConsumer when message received from queue
 
 ### Frontend Implementation for US1
 
-- [ ] T031 [US1] Create PointToPointPanel.vue in frontend/src/panels/PointToPointPanel.vue with producer section (MessageInput), consumer section (MessageList), and clear button
-- [ ] T032 [US1] Wire PointToPointPanel to SignalR MessageReceived event for PointToPoint pattern messages
-- [ ] T033 [US1] Add PointToPointPanel to App.vue in left column of 3-column layout
-- [ ] T034 [US1] Add error handling in PointToPointPanel showing connection errors from API responses
-- [ ] T035 [US1] Add FIFO message ordering in PointToPointPanel consumer section with max 50 messages
+- [x] T033 [US1] Create PointToPointPanel.vue in frontend/src/panels/PointToPointPanel.vue with producer section (MessageInput), consumer section (MessageList), and clear button
+- [x] T034 [US1] Wire PointToPointPanel to SignalR MessageReceived event for PointToPoint pattern messages
+- [x] T035 [US1] Add PointToPointPanel to App.vue in left column of 3-column layout
+- [x] T036 [US1] Add error handling in PointToPointPanel showing connection errors from API responses
+- [x] T037 [US1] Add FIFO message ordering in PointToPointPanel consumer section with max 50 messages
 
 **Checkpoint**: Point-to-Point demo fully functional - can send and receive messages through IBM MQ
 
@@ -116,25 +118,25 @@
 
 ### Backend Models for US2
 
-- [ ] T036 [P] [US2] Create Subscriber.cs model in backend/src/MqPlayground.Api/Models/Subscriber.cs with Id, Name, IsActive, MessageCount properties
+- [x] T038 [P] [US2] Create Subscriber.cs model in backend/src/MqPlayground.Api/Models/Subscriber.cs with Id, Name, IsActive, MessageCount properties
 
 ### Backend Implementation for US2
 
-- [ ] T037 [US2] Create PubSubService.cs in backend/src/MqPlayground.Api/Services/PubSubService.cs with PublishMessage, GetSubscribers, AddSubscriber, RemoveSubscriber methods
-- [ ] T038 [US2] Create TopicSubscriber.cs background worker in backend/src/MqPlayground.Api/Workers/TopicSubscriber.cs that manages dynamic subscriptions to PLAYGROUND.PUBSUB topic
-- [ ] T039 [US2] Create PubSubController.cs in backend/src/MqPlayground.Api/Controllers/PubSubController.cs with POST /api/pubsub/publish, GET/POST /api/pubsub/subscribers, DELETE /api/pubsub/subscribers/{id}, POST /api/pubsub/clear
-- [ ] T040 [US2] Register TopicSubscriber as hosted service in Program.cs
-- [ ] T041 [US2] Add SubscriberMessageReceived, SubscriberAdded, SubscriberRemoved SignalR broadcasts in PubSubService/TopicSubscriber
-- [ ] T042 [US2] Implement subscriber count validation (min 2, max 4) in PubSubService
+- [x] T039 [US2] Create PubSubService.cs in backend/src/MqPlayground.Api/Services/PubSubService.cs with PublishMessage, GetSubscribers, AddSubscriber, RemoveSubscriber methods
+- [x] T040 [US2] Create TopicSubscriber.cs background worker in backend/src/MqPlayground.Api/Workers/TopicSubscriber.cs that manages dynamic subscriptions to PLAYGROUND.PUBSUB topic
+- [x] T041 [US2] Create PubSubController.cs in backend/src/MqPlayground.Api/Controllers/PubSubController.cs with POST /api/pubsub/publish, GET/POST /api/pubsub/subscribers, DELETE /api/pubsub/subscribers/{id}, POST /api/pubsub/clear
+- [x] T042 [US2] Register TopicSubscriber as hosted service in Program.cs
+- [x] T043 [US2] Add SubscriberMessageReceived, SubscriberAdded, SubscriberRemoved SignalR broadcasts in PubSubService/TopicSubscriber
+- [x] T044 [US2] Implement subscriber count validation (min 2, max 4) in PubSubService
 
 ### Frontend Implementation for US2
 
-- [ ] T043 [P] [US2] Create SubscriberControl.vue in frontend/src/components/SubscriberControl.vue with Add/Remove subscriber buttons and subscriber count display
-- [ ] T044 [US2] Create PubSubPanel.vue in frontend/src/panels/PubSubPanel.vue with publisher section, dynamic subscriber sections (2-4), and subscriber controls
-- [ ] T045 [US2] Wire PubSubPanel to SignalR SubscriberMessageReceived, SubscriberAdded, SubscriberRemoved events
-- [ ] T046 [US2] Add PubSubPanel to App.vue in center column of 3-column layout
-- [ ] T047 [US2] Implement subscriber section rendering with individual message lists per subscriber
-- [ ] T048 [US2] Add subscriber active/inactive visual indicator in PubSubPanel
+- [x] T045 [P] [US2] Create SubscriberControl.vue in frontend/src/components/SubscriberControl.vue with Add/Remove subscriber buttons and subscriber count display
+- [x] T046 [US2] Create PubSubPanel.vue in frontend/src/panels/PubSubPanel.vue with publisher section, dynamic subscriber sections (2-4), and subscriber controls
+- [x] T047 [US2] Wire PubSubPanel to SignalR SubscriberMessageReceived, SubscriberAdded, SubscriberRemoved events
+- [x] T048 [US2] Add PubSubPanel to App.vue in center column of 3-column layout
+- [x] T049 [US2] Implement subscriber section rendering with individual message lists per subscriber
+- [x] T050 [US2] Add subscriber active/inactive visual indicator in PubSubPanel
 
 **Checkpoint**: Pub/Sub demo fully functional - can publish to topic and see all subscribers receive messages
 
@@ -148,26 +150,26 @@
 
 ### Backend Models for US3
 
-- [ ] T049 [P] [US3] Create Request.cs model in backend/src/MqPlayground.Api/Models/Request.cs with Id, CorrelationId, Content, SentAt, Status, Response, TimeoutSeconds properties
+- [x] T051 [P] [US3] Create Request.cs model in backend/src/MqPlayground.Api/Models/Request.cs with Id, CorrelationId, Content, SentAt, Status, Response, TimeoutSeconds properties
 
 ### Backend Implementation for US3
 
-- [ ] T050 [US3] Create RequestReplyService.cs in backend/src/MqPlayground.Api/Services/RequestReplyService.cs with SendRequest method using correlation IDs and reply queue
-- [ ] T051 [US3] Create ReplyHandler.cs background worker in backend/src/MqPlayground.Api/Workers/ReplyHandler.cs that listens on request queue, generates response, sends to reply queue
-- [ ] T052 [US3] Implement simple responder logic in ReplyHandler (echo, arithmetic evaluation for "Calculate: X+Y" format)
-- [ ] T053 [US3] Create RequestReplyController.cs in backend/src/MqPlayground.Api/Controllers/RequestReplyController.cs with POST /api/request-reply/send and POST /api/request-reply/clear
-- [ ] T054 [US3] Register ReplyHandler as hosted service in Program.cs
-- [ ] T055 [US3] Add RequestStatusChanged SignalR broadcast when reply received or timeout occurs
-- [ ] T056 [US3] Implement request timeout handling (default 30s) with TimedOut status update
+- [x] T052 [US3] Create RequestReplyService.cs in backend/src/MqPlayground.Api/Services/RequestReplyService.cs with SendRequest method using correlation IDs and reply queue
+- [x] T053 [US3] Create ReplyHandler.cs background worker in backend/src/MqPlayground.Api/Workers/ReplyHandler.cs that listens on request queue, generates response, sends to reply queue
+- [x] T054 [US3] Implement simple responder logic in ReplyHandler (echo, arithmetic evaluation for "Calculate: X+Y" format)
+- [x] T055 [US3] Create RequestReplyController.cs in backend/src/MqPlayground.Api/Controllers/RequestReplyController.cs with POST /api/request-reply/send and POST /api/request-reply/clear
+- [x] T056 [US3] Register ReplyHandler as hosted service in Program.cs
+- [x] T057 [US3] Add RequestStatusChanged SignalR broadcast when reply received or timeout occurs
+- [x] T058 [US3] Implement request timeout handling (default 30s) with TimedOut status update
 
 ### Frontend Implementation for US3
 
-- [ ] T057 [US3] Create RequestReplyPanel.vue in frontend/src/panels/RequestReplyPanel.vue with request input, pending requests list, and completed responses display
-- [ ] T058 [US3] Wire RequestReplyPanel to SignalR RequestStatusChanged event
-- [ ] T059 [US3] Add RequestReplyPanel to App.vue in right column of 3-column layout
-- [ ] T060 [US3] Display correlation ID on both request and response messages in UI
-- [ ] T061 [US3] Add timeout indicator for pending requests with countdown or elapsed time
-- [ ] T062 [US3] Handle timeout errors with visual feedback in RequestReplyPanel
+- [x] T059 [US3] Create RequestReplyPanel.vue in frontend/src/panels/RequestReplyPanel.vue with request input, pending requests list, and completed responses display
+- [x] T060 [US3] Wire RequestReplyPanel to SignalR RequestStatusChanged event
+- [x] T061 [US3] Add RequestReplyPanel to App.vue in right column of 3-column layout
+- [x] T062 [US3] Display correlation ID on both request and response messages in UI
+- [x] T063 [US3] Add timeout indicator for pending requests with countdown or elapsed time
+- [x] T064 [US3] Handle timeout errors with visual feedback in RequestReplyPanel
 
 **Checkpoint**: Request/Reply demo fully functional - can send requests and see correlated responses
 
@@ -177,16 +179,17 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T063 [P] Add XML documentation comments to all public C# classes in backend/src/MqPlayground.Api/
-- [ ] T064 [P] Add Vue component prop/emit documentation to all .vue files in frontend/src/
-- [ ] T065 Add educational comments explaining "why" of each MQ pattern in service files
-- [ ] T066 [P] Add structured logging for MQ operations in all service and worker files
-- [ ] T067 Implement message throttling (10 msg/sec) in frontend MessageInput component
-- [ ] T068 Implement long message truncation (10,000 chars) with expand modal in MessageList
-- [ ] T069 [P] Add connection recovery handling in MqConnectionService with retry and SignalR notification
-- [ ] T070 Create README.md in repository root with project overview and quickstart reference
-- [ ] T071 Validate all endpoints work per quickstart.md test scenarios
-- [ ] T072 Final Docker Compose test: `docker compose up` brings up all services
+- [x] T065 [P] Add XML documentation comments to all public C# classes in backend/src/MqPlayground.Api/
+- [x] T066 [P] Add Vue component prop/emit documentation to all .vue files in frontend/src/
+- [x] T067 Add educational comments explaining "why" of each MQ pattern in service files
+- [x] T068 Add inline documentation in MessageHub.cs explaining each SignalR event and which MQ operation triggers it (constitution: Educational Clarity)
+- [x] T069 [P] Add structured logging for MQ operations in all service and worker files
+- [ ] T070 Implement message throttling (10 msg/sec) in frontend MessageInput component
+- [ ] T071 Implement long message truncation (10,000 chars) with expand modal in MessageList
+- [ ] T072 [P] Add connection recovery handling in MqConnectionService with retry and SignalR notification
+- [x] T073 Create README.md in repository root with project overview, sample messages, and quickstart reference
+- [ ] T074 Validate all endpoints work per quickstart.md test scenarios
+- [ ] T075 Final Docker Compose test: `docker compose up` brings up all services including backend and frontend containers
 
 ---
 
@@ -226,29 +229,31 @@ T005: Create docker-compose.yml
 T006: Create MQSC config
 T007: Create .env.example
 T008: Create secrets placeholder
+T009: Create backend Dockerfile
+T010: Create frontend Dockerfile
 ```
 
 **Phase 2 (Foundational)**:
 ```bash
 # Models can run in parallel:
-T009: Message.cs
-T010: ConnectionStatus.cs
-T011: PatternConfig.cs
-T012: ErrorResponse.cs
+T011: Message.cs
+T012: ConnectionStatus.cs
+T013: PatternConfig.cs
+T014: ErrorResponse.cs
 
 # Frontend components can run in parallel:
-T020: ConnectionStatus.vue
-T021: MessageInput.vue
-T022: MessageList.vue
-T023: PatternPanel.vue
+T022: ConnectionStatus.vue
+T023: MessageInput.vue
+T024: MessageList.vue
+T025: PatternPanel.vue
 ```
 
 **After Foundational - User Stories in Parallel**:
 ```bash
 # Three developers can work simultaneously:
-Developer A: Phase 3 (US1 - Point-to-Point)
-Developer B: Phase 4 (US2 - Pub/Sub)
-Developer C: Phase 5 (US3 - Request/Reply)
+Developer A: Phase 3 (US1 - Point-to-Point) T028-T037
+Developer B: Phase 4 (US2 - Pub/Sub) T038-T050
+Developer C: Phase 5 (US3 - Request/Reply) T051-T064
 ```
 
 ---

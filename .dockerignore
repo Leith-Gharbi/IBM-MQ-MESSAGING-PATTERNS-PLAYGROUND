@@ -1,0 +1,40 @@
+# Git
+.git/
+.gitignore
+
+# Node
+node_modules/
+npm-debug.log*
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+
+# IDE
+.idea/
+.vscode/
+
+# Documentation
+*.md
+!README.md
+specs/
+.specify/
+
+# Environment
+.env*
+!.env.example
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Coverage
+coverage/
+*.lcov
+
+# OS
+.DS_Store
+Thumbs.db

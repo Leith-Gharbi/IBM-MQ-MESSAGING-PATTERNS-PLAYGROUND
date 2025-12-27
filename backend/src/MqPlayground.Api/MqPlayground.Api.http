@@ -1,0 +1,6 @@
+@MqPlayground.Api_HostAddress = http://localhost:5181
+
+GET {{MqPlayground.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

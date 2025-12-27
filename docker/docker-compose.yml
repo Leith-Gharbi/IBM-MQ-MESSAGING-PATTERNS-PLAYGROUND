@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  ibmmq:
+    image: icr.io/ibm-messaging/mq:latest
+    container_name: ibmmq
+    hostname: ibmmq
+    environment:
+      - LICENSE=accept
+      - MQ_QMGR_NAME=QM1
+      - MQ_APP_PASSWORD_FILE=/run/secrets/mqAppPassword
+      - MQ_ADMIN_PASSWORD_FILE=/run/secrets/mqAdminPassword
+    ports:
+      - "1414:1414"   # MQ Listener
+      - "9443:9443"   # Web Console
+    volumes:
+      - mqdata:/mnt/mqm
+      - ./mq/config/20-playground.mqsc:/etc/mqm/20-playground.mqsc
+    secrets:
+      - mqAppPassword
+      - mqAdminPassword
+    healthcheck:
+      test: ["CMD", "dspmq", "-m", "QM1", "-o", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: mq-playground-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+      - MQ__Host=ibmmq
+      - MQ__Port=1414
+      - MQ__Channel=DEV.APP.SVRCONN
+      - MQ__QueueManager=QM1
+      - MQ__User=app
+      - MQ__PasswordFile=/run/secrets/mqAppPassword
+    depends_on:
+      ibmmq:
+        condition: service_healthy
+    secrets:
+      - mqAppPassword
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: mq-playground-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  mqdata:
+
+secrets:
+  mqAppPassword:
+    file: ./secrets/app_password.txt
+  mqAdminPassword:
+    file: ./secrets/admin_password.txt
